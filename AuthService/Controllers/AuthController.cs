@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ServiceTemplate.Repositories;
+using AuthService.Repositories;
 
-namespace ServiceTemplate.Controllers
+namespace AuthService.Controllers
 {
-    public class ServiceController : Controller
+    public class AuthController : Controller
     {
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
-        private readonly ServiceRepository _repository;
+        private readonly AuthRepository _repository;
 
-        ServiceController (ILogger logger, IConfiguration configuration, ServiceRepository repository)
+        public AuthController (ILogger logger, IConfiguration configuration, AuthRepository repository)
         {
             _logger = logger;
             _configuration = configuration;
