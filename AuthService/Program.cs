@@ -3,13 +3,18 @@ using VaultSharp;
 using VaultSharp.V1.AuthMethods.Token;
 using VaultSharp.V1.AuthMethods;
 using VaultSharp.V1.Commons;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
-var EndPoint = "https://localhost:8251/";
+#region Vault
+
+var EndPoint = "https://localhost:8251/"; //træk fra nginx
 var httpClientHandler = new HttpClientHandler();
 httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => { return true; };
 
 // Initialize one of the several auth methods.
-IAuthMethodInfo authMethod = new TokenAuthMethodInfo("00000000-0000-0000-0000-000000000000");
+IAuthMethodInfo authMethod = new TokenAuthMethodInfo("00000000-0000-0000-0000-000000000000"); //undersøg om er korrekt
 // Initialize settings. You can also set proxies, custom delegates etc. here.
 var vaultClientSettings = new VaultClientSettings(EndPoint, authMethod)
 {
@@ -23,15 +28,40 @@ var vaultClientSettings = new VaultClientSettings(EndPoint, authMethod)
 IVaultClient vaultClient = new VaultClient(vaultClientSettings);
 
 // Use client to read a key-value secret.
-Secret<SecretData> kv2Secret = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(path: "hemmeligheder", mountPoint: "secret");
-var minkode = kv2Secret.Data.Data["MinKode"];
+Secret<SecretData> kv2Secret = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(path: "Secrets", mountPoint: "secret"); //skal probably også ændres
+var minkode = kv2Secret.Data.Data["MinKode"]; //skal ændres
+
+#endregion   
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+#region Authentication
 
+string jwtSecret = Environment.GetEnvironmentVariable("jwtSecret") ?? string.Empty;
+string jwtIssuer = Environment.GetEnvironmentVariable("jwtIssuer") ?? string.Empty;
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtIssuer,
+                        ValidAudience = "http://localhost", //træk fra nginx
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+                    };
+                });
+
+#endregion
+
+
+// Add services to the container
 builder.Services.AddControllers();
-builder.Services.AddScoped<AuthRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -43,6 +73,8 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
