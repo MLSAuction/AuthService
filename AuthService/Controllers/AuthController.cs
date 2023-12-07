@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using VaultSharp.V1.Commons;
 
 namespace AuthService.Controllers
 {
@@ -16,12 +17,14 @@ namespace AuthService.Controllers
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
         private readonly IAuthRepository _repository;
+        private readonly Secret<SecretData> _secret;
 
-        public AuthController(ILogger logger, IConfiguration configuration, IAuthRepository repository)
+        public AuthController(ILogger<AuthController> logger, IConfiguration configuration, IAuthRepository repository, Secret<SecretData> secret)
         {
             _logger = logger;
             _configuration = configuration;
             _repository = repository;
+            _secret = secret;
         }
 
         [AllowAnonymous]
@@ -65,7 +68,7 @@ namespace AuthService.Controllers
         public IActionResult ValidateToken([FromBody] string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Secret"]); //skal ændres til at bruge vault
+            var key = Encoding.ASCII.GetBytes(_secret.Data.Data["Issuer"].ToString());
 
             try
             {

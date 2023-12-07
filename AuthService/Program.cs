@@ -7,39 +7,36 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+var builder = WebApplication.CreateBuilder(args);
+
 #region Vault
 
-var EndPoint = "https://localhost:8251/"; //træk fra nginx
+//var EndPoint = "https://vault";
+var EndPoint = "https://localhost:8251";
 var httpClientHandler = new HttpClientHandler();
 httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => { return true; };
 
-// Initialize one of the several auth methods.
 IAuthMethodInfo authMethod = new TokenAuthMethodInfo("00000000-0000-0000-0000-000000000000"); //undersøg om er korrekt
-// Initialize settings. You can also set proxies, custom delegates etc. here.
+
 var vaultClientSettings = new VaultClientSettings(EndPoint, authMethod)
 {
     Namespace = "",
-    MyHttpClientProviderFunc = handler
-    => new HttpClient(httpClientHandler)
-    {
-        BaseAddress = new Uri(EndPoint)
-    }
+    MyHttpClientProviderFunc = handler => new HttpClient(httpClientHandler) { BaseAddress = new Uri(EndPoint) }
 };
+
 IVaultClient vaultClient = new VaultClient(vaultClientSettings);
 
-// Use client to read a key-value secret.
-Secret<SecretData> kv2Secret = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(path: "Secrets", mountPoint: "secret"); //skal probably også ændres
-var minkode = kv2Secret.Data.Data["MinKode"]; //skal ændres
+Secret<SecretData> vaultSecret = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(path: "Secrets", mountPoint: "secret");
+
+//register the secrets as a singleton so we can use dependency injection in the classes that need it
+builder.Services.AddSingleton<Secret<SecretData>>(vaultSecret);
 
 #endregion   
 
-
-var builder = WebApplication.CreateBuilder(args);
-
 #region Authentication
 
-string jwtSecret = Environment.GetEnvironmentVariable("jwtSecret") ?? string.Empty;
-string jwtIssuer = Environment.GetEnvironmentVariable("jwtIssuer") ?? string.Empty;
+string jwtSecret = vaultSecret.Data.Data["jwtSecret"].ToString() ?? string.Empty;
+string jwtIssuer = vaultSecret.Data.Data["jwtIssuer"].ToString() ?? string.Empty;
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -57,7 +54,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 });
 
 #endregion
-
 
 // Add services to the container
 builder.Services.AddControllers();

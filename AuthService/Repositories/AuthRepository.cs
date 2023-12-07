@@ -7,6 +7,7 @@ using VaultSharp.V1.SecretsEngines.Transit;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using VaultSharp.V1.Commons;
 
 namespace AuthService.Repositories
 {
@@ -14,15 +15,17 @@ namespace AuthService.Repositories
     {
         private readonly ILogger<AuthRepository> _logger;
         private readonly IConfiguration _configuration;
+        private readonly Secret<SecretData> _secret;
         private readonly HttpClient _userService;
 
-        public AuthRepository (ILogger<AuthRepository> logger, IConfiguration configuration)
+        public AuthRepository (ILogger<AuthRepository> logger, IConfiguration configuration, Secret<SecretData> secret)
         {
             _logger = logger;
             _configuration = configuration;
+            _secret = secret;
 
             _userService = new HttpClient();
-            _userService.BaseAddress = new Uri(_configuration["UserService"]);
+            _userService.BaseAddress = new Uri(_configuration["UserService"]); //this should be named something else and taken from nginx
         }
 
         public async Task<string?> Login(AuthDTO authDTO)
@@ -66,7 +69,7 @@ namespace AuthService.Repositories
         {
             if (salt == null)
             {
-                salt = "REPLACE THIS WITH SALT FROM VAULT"; // <---
+                salt = _secret.Data.Data["Salt"].ToString();
             }
             
             byte[] saltByteArray = Encoding.ASCII.GetBytes(salt);
@@ -83,7 +86,7 @@ namespace AuthService.Repositories
 
         private string GenerateJwt(string username)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Secret"])); // skal ændres til vault
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret.Data.Data["jwtSecret"].ToString()));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -91,7 +94,7 @@ namespace AuthService.Repositories
                 new Claim(ClaimTypes.NameIdentifier, username)
             };
 
-            var token = new JwtSecurityToken(_configuration["Issuer"],
+            var token = new JwtSecurityToken(_secret.Data.Data["jwtIssuer"].ToString(),
                                              "http://localhost", //skal ændres til at trække fra nginx
                                              claims,
                                              expires: DateTime.Now.AddHours(1),
