@@ -41,7 +41,7 @@ namespace AuthService.Controllers
             }
             else
             {
-                return BadRequest("Invalid Login");
+                return Unauthorized("Unauthorized");
             }
         }
 
@@ -68,7 +68,7 @@ namespace AuthService.Controllers
         public IActionResult ValidateToken([FromBody] string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_secret.Data.Data["Issuer"].ToString());
+            var key = Encoding.ASCII.GetBytes(_secret.Data.Data["jwtIssuer"].ToString());
 
             try
             {

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using AuthService.Models;
 using Microsoft.AspNetCore.Mvc;
+using VaultSharp.V1.Commons;
 
 namespace AuthServiceTests
 {
@@ -20,8 +21,9 @@ namespace AuthServiceTests
             _authRepositoryStub = new Mock<IAuthRepository>();
             var loggerStub = new Mock<ILogger<AuthController>>();
             var configurationStub = new Mock<IConfiguration>();
+            var secretStub = new Mock<Secret<SecretData>>();
 
-            _authController = new AuthController(loggerStub.Object, configurationStub.Object, _authRepositoryStub.Object);
+            _authController = new AuthController(loggerStub.Object, configurationStub.Object, _authRepositoryStub.Object, secretStub.Object);
         }
 
         [TearDown]
@@ -61,10 +63,10 @@ namespace AuthServiceTests
             }
             else
             {
-                Assert.IsInstanceOf<BadRequestObjectResult>(result);
-                var badResult = (BadRequestObjectResult)result;
+                Assert.IsInstanceOf<UnauthorizedObjectResult>(result);
+                var badResult = (UnauthorizedObjectResult)result;
 
-                Assert.AreEqual(400, badResult.StatusCode);
+                Assert.AreEqual(401, badResult.StatusCode);
             }
         }
     }
