@@ -34,7 +34,7 @@ namespace AuthService.Repositories
 
             var requestBody = new StringContent(JsonSerializer.Serialize(authDTO), Encoding.UTF8, "application/json");
 
-            var response = await _userService.PostAsync("/login", requestBody);
+            var response = await _userService.PostAsync("/User/login", requestBody);
 
             if (response.IsSuccessStatusCode)
             {
@@ -53,7 +53,7 @@ namespace AuthService.Repositories
             var requestBody = new StringContent(JsonSerializer.Serialize(userDTO), Encoding.UTF8, "application/json");
 
             //post new user to userservice
-            var response = await _userService.PostAsync("", requestBody);
+            var response = await _userService.PostAsync("/User/register", requestBody);
 
             if (response.IsSuccessStatusCode)
             {
