@@ -68,7 +68,7 @@ namespace AuthService.Controllers
         public IActionResult ValidateToken([FromBody] string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_secret.Data.Data["jwtIssuer"].ToString());
+            var key = Encoding.ASCII.GetBytes(_secret.Data.Data["jwtSecret"].ToString()); //jwtIssuer før
 
             try
             {
