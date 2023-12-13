@@ -27,6 +27,11 @@ namespace AuthService.Controllers
             _secret = secret;
         }
 
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <param name="authDTO"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] AuthDTO authDTO)
@@ -45,6 +50,11 @@ namespace AuthService.Controllers
             }
         }
 
+        /// <summary>
+        /// Register user
+        /// </summary>
+        /// <param name="userDTO"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserDTO userDTO)
@@ -63,6 +73,11 @@ namespace AuthService.Controllers
             }
         }
 
+        /// <summary>
+        /// Validate the JWT (Returning username)
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("validate")]
         public IActionResult ValidateToken([FromBody] string token)
