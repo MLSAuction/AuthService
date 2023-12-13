@@ -13,6 +13,7 @@
 	<Description>
 		1.0.0 Initial version
 	</Description>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
