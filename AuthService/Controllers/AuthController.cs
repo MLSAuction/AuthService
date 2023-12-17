@@ -17,14 +17,12 @@ namespace AuthService.Controllers
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
         private readonly IAuthRepository _repository;
-        private readonly Secret<SecretData> _secret;
 
-        public AuthController(ILogger<AuthController> logger, IConfiguration configuration, IAuthRepository repository, Secret<SecretData> secret)
+        public AuthController(ILogger<AuthController> logger, IConfiguration configuration, IAuthRepository repository)
         {
             _logger = logger;
             _configuration = configuration;
             _repository = repository;
-            _secret = secret;
         }
 
         /// <summary>
@@ -83,7 +81,7 @@ namespace AuthService.Controllers
         public IActionResult ValidateToken([FromBody] string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_secret.Data.Data["jwtSecret"].ToString()); //jwtIssuer før
+            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("jwtSecret")); //jwtIssuer før
 
             try
             {
