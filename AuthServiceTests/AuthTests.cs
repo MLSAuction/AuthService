@@ -21,9 +21,8 @@ namespace AuthServiceTests
             _authRepositoryStub = new Mock<IAuthRepository>();
             var loggerStub = new Mock<ILogger<AuthController>>();
             var configurationStub = new Mock<IConfiguration>();
-            var secretStub = new Mock<Secret<SecretData>>();
 
-            _authController = new AuthController(loggerStub.Object, configurationStub.Object, _authRepositoryStub.Object, secretStub.Object);
+            _authController = new AuthController(loggerStub.Object, configurationStub.Object, _authRepositoryStub.Object);
         }
 
         [TearDown]

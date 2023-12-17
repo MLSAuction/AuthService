@@ -15,14 +15,12 @@ namespace AuthService.Repositories
     {
         private readonly ILogger<AuthRepository> _logger;
         private readonly IConfiguration _configuration;
-        private readonly Secret<SecretData> _secret;
         private readonly HttpClient _userService;
 
-        public AuthRepository (ILogger<AuthRepository> logger, IConfiguration configuration, Secret<SecretData> secret)
+        public AuthRepository (ILogger<AuthRepository> logger, IConfiguration configuration)
         {
             _logger = logger;
             _configuration = configuration;
-            _secret = secret;
 
             _userService = new HttpClient();
             _userService.BaseAddress = new Uri(_configuration["UserService"]); //this should be named something else and taken from nginx
@@ -69,7 +67,7 @@ namespace AuthService.Repositories
         {
             if (salt == null)
             {
-                salt = _secret.Data.Data["Salt"].ToString();
+                salt = Environment.GetEnvironmentVariable("Salt");
             }
             
             byte[] saltByteArray = Encoding.ASCII.GetBytes(salt);
@@ -86,7 +84,7 @@ namespace AuthService.Repositories
 
         private string GenerateJwt(string username)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret.Data.Data["jwtSecret"].ToString()));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("jwtSecret")));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -94,7 +92,7 @@ namespace AuthService.Repositories
                 new Claim(ClaimTypes.NameIdentifier, username)
             };
 
-            var token = new JwtSecurityToken(_secret.Data.Data["jwtIssuer"].ToString(),
+            var token = new JwtSecurityToken(Environment.GetEnvironmentVariable("jwtIssuer"),
                                              "http://localhost", //skal ændres til at trække fra nginx
                                              claims,
                                              expires: DateTime.Now.AddHours(1),
