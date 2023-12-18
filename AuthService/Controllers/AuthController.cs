@@ -34,7 +34,7 @@ namespace AuthService.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] AuthDTO authDTO)
         {
-            _logger.LogInformation("");
+            _logger.LogInformation($"Logging in user {authDTO.Username]");
 
             string? loginResultJWT = await _repository.Login(authDTO);
 
@@ -57,7 +57,7 @@ namespace AuthService.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserDTO userDTO)
         {
-            _logger.LogInformation("");
+            _logger.LogInformation("Registering user {authDTO.Username]}");
 
             string? loginResultJWT = await _repository.Register(userDTO);
 
@@ -80,6 +80,8 @@ namespace AuthService.Controllers
         [HttpPost("validate")]
         public IActionResult ValidateToken([FromBody] string token)
         {
+            _logger.LogInformation($"Validating jwt {token}");
+
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("jwtSecret")); //jwtIssuer før
 
