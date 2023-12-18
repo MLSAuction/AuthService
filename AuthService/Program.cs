@@ -8,6 +8,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using NLog.Web;
+using NLog;
+
+var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+logger.Debug("Starting Auth Service");
 
 var builder = WebApplication.CreateBuilder(args);
 
