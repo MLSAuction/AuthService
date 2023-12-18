@@ -34,7 +34,7 @@ namespace AuthService.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] AuthDTO authDTO)
         {
-            _logger.LogInformation($"Logging in user {authDTO.Username]");
+            _logger.LogInformation($"Logging in user {authDTO.Username}");
 
             string? loginResultJWT = await _repository.Login(authDTO);
 
