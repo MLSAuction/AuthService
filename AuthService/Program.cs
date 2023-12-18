@@ -11,8 +11,9 @@ using System.Reflection;
 using NLog.Web;
 using NLog;
 
-var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+var logger = NLog.LogManager.Setup().LoadConfigurationFromFile("NLog.config").GetCurrentClassLogger();
 logger.Debug("Starting Auth Service");
+Console.WriteLine("Initiating Auth Service");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +42,6 @@ else //compose flow
 
     Secret<SecretData> vaultSecret = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(path: "Secrets", mountPoint: "secret");
 
-    Environment.SetEnvironmentVariable("LokiEndpoint", "http://loki:3100"); //compose
     Environment.SetEnvironmentVariable("jwtSecret", vaultSecret.Data.Data["jwtSecret"].ToString());
     Environment.SetEnvironmentVariable("jwtIssuer", vaultSecret.Data.Data["jwtIssuer"].ToString());
     Environment.SetEnvironmentVariable("Salt", vaultSecret.Data.Data["Salt"].ToString());
