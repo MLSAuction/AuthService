@@ -16,6 +16,7 @@ logger.Debug("Starting Auth Service");
 Console.WriteLine("Initiating Auth Service");
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseNLog();
 
 #region Configuration
 
