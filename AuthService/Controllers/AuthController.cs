@@ -57,7 +57,7 @@ namespace AuthService.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserDTO userDTO)
         {
-            _logger.LogInformation("Registering user {authDTO.Username]}");
+            _logger.LogInformation($"Registering user {userDTO.Username}");
 
             string? loginResultJWT = await _repository.Register(userDTO);
 
