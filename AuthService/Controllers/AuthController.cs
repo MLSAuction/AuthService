@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using VaultSharp.V1.Commons;
+using System.Diagnostics;
 
 namespace AuthService.Controllers
 {
@@ -106,6 +107,38 @@ namespace AuthService.Controllers
                 _logger.LogError(ex, ex.Message);
                 return BadRequest();
             }
+        }
+
+        /// <summary>
+        /// Get service version
+        /// </summary>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpGet("version")]
+        public async Task<Dictionary<string, string>> GetVersion()
+        {
+            _logger.LogInformation("Auth version endpoint called");
+
+            var properties = new Dictionary<string, string>();
+            var assembly = typeof(Program).Assembly;
+            properties.Add("service", "mls-auth-service");
+            var ver = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location).ProductVersion;
+            properties.Add("version", ver!);
+
+            try
+            {
+                var hostName = System.Net.Dns.GetHostName();
+                var ips = await System.Net.Dns.GetHostAddressesAsync(hostName);
+                var ipa = ips.First().MapToIPv4().ToString();
+                properties.Add("hosted-at-address", ipa);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                properties.Add("hosted-at-address", "Could not resolve IP-address");
+            }
+
+            return properties;
         }
     }
 }
